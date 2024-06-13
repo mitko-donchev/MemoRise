@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MemoRise</string>
+    <string name="edit_note">Edit note</string>
+    <string name="new_note">New note</string>
+</resources>
