@@ -19,7 +19,8 @@ import com.mitko.memorise.R
 fun HomeAppBar(
     selectAllNotes: (Boolean) -> Unit,
     isNoteListEmpty: Boolean,
-    areAllSelected: Boolean
+    areAllSelected: Boolean,
+    isEditing: Boolean
 ) {
     val haptic = LocalHapticFeedback.current
 
@@ -31,7 +32,7 @@ fun HomeAppBar(
         },
         actions = {
             // Select Action
-            if (!isNoteListEmpty) {
+            if (!isNoteListEmpty && !isEditing) {
                 IconButton(onClick = {
                     selectAllNotes.invoke(!areAllSelected)
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)

@@ -56,6 +56,7 @@ fun EditorView(
     var noteText by remember { mutableStateOf("") }
 
     LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        if (noteText.isBlank()) return@LifecycleEventEffect
         addNote.invoke(
             Note(
                 noteId,

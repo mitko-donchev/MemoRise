@@ -15,7 +15,9 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -48,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.mitko.domain.note.Note
 import com.mitko.memorise.presentation.ui.components.HomeAppBar
 import com.mitko.memorise.presentation.ui.components.NoteItem
 import com.mitko.memorise.presentation.ui.navigation.AppNavigationActions
@@ -61,6 +64,7 @@ fun HomeView(
     navigationActions: AppNavigationActions,
     selectNote: (Int) -> Unit,
     selectAllNotes: (Boolean) -> Job,
+    updateNote: (Note) -> Job,
     deleteNote: (Int) -> Job,
     deleteNotes: (List<Int>) -> Job,
     deleteAllNotes: () -> Job
@@ -75,6 +79,7 @@ fun HomeView(
     var noteListHasSelectedItems: Boolean by remember { mutableStateOf(true) }
 
     var selectedNoteState by remember { mutableStateOf<NoteState?>(null) }
+    var noteText by remember { mutableStateOf("") }
 
     var listOfNotesIdsForDeletion: List<Int>
 
@@ -104,12 +109,14 @@ fun HomeView(
                     selectAllNotes.invoke(it)
                 },
                 noteListIsEmpty,
-                areAllSelected
+                areAllSelected,
+                selectedNoteState != null
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 if (selectedNoteState != null) {
+                    updateNote.invoke(selectedNoteState!!.note.copy(text = noteText))
                     selectedNoteState = null
                 } else if (noteListHasSelectedItems) {
                     if (areAllSelected) {
@@ -205,13 +212,69 @@ fun HomeView(
                                         animatedVisibilityScope = this,
                                         editNote = {
                                             selectedNoteState = it
+                                            noteText = it.note.text
                                         },
                                         selectNote = selectNote
                                     )
                                 }
                             }
                         }
-                        NoteEditor(selectedNoteState)
+
+                        AnimatedContent(
+                            targetState = selectedNoteState,
+                            transitionSpec = {
+                                fadeIn() togetherWith fadeOut()
+                            },
+                            label = "NoteEditor"
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .imePadding(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                it?.let { noteState ->
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .sharedBounds(
+                                                rememberSharedContentState(key = noteState.note.id.toString() + "-bound"),
+                                                animatedVisibilityScope = this@AnimatedContent,
+                                                clipInOverlayDuringTransition = OverlayClip(
+                                                    RoundedCornerShape(16.dp)
+                                                )
+                                            )
+                                            .padding(8.dp)
+                                            .clip(RoundedCornerShape(16.dp)),
+                                    ) {
+                                        TextField(
+                                            modifier = Modifier
+                                                .fillMaxSize(),
+                                            value = noteText,
+                                            onValueChange = { noteText = it },
+                                            keyboardOptions = KeyboardOptions(
+                                                imeAction = ImeAction.Done
+                                            ),
+                                            keyboardActions = KeyboardActions(
+                                                onDone = {
+                                                    updateNote.invoke(noteState.note.copy(text = noteText))
+                                                    selectedNoteState = null
+                                                }
+                                            ),
+                                            colors = TextFieldDefaults.colors(
+                                                focusedIndicatorColor = Color.Transparent,
+                                                unfocusedIndicatorColor = Color.Transparent,
+                                                disabledIndicatorColor = Color.Transparent
+                                            ),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+//                        NoteEditor(selectedNoteState, updateNote, noteText, deselectNote = {
+//                            selectedNoteState = null
+//                        })
                     }
                 }
             }
@@ -219,57 +282,15 @@ fun HomeView(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SharedTransitionScope.NoteEditor(
-    targetState: NoteState?
+    targetState: NoteState?,
+    updateNote: (Note) -> Job,
+    noteText: String?,
+    deselectNote: () -> Unit
 ) {
-    AnimatedContent(
-        targetState = targetState,
-        transitionSpec = {
-            fadeIn() togetherWith fadeOut()
-        },
-        label = "NoteEditor"
-    ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            it?.let { noteState ->
-                var noteText by remember { mutableStateOf(noteState.note.text) }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .sharedBounds(
-                            rememberSharedContentState(key = noteState.note.id.toString() + "-bound"),
-                            animatedVisibilityScope = this@AnimatedContent,
-                            clipInOverlayDuringTransition = OverlayClip(RoundedCornerShape(16.dp))
-                        )
-                        .padding(4.dp)
-                        .clip(RoundedCornerShape(16.dp)),
-                ) {
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        value = noteText,
-                        onValueChange = { noteText = it },
-                        keyboardOptions = KeyboardOptions(
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                            }
-                        ),
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        ),
-                    )
-                }
-            }
-        }
-    }
 }
 
 enum class BackPressState { InitialPress, SecondTouch }
