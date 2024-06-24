@@ -17,6 +17,7 @@ fun HomeScreen(navigationActions: AppNavigationActions) {
         navigationActions,
         homeViewModel::selectNote,
         homeViewModel::selectAllNotes,
+        homeViewModel::updateNote,
         homeViewModel::deleteNote,
         homeViewModel::deleteNotes,
         homeViewModel::deleteAllNotes

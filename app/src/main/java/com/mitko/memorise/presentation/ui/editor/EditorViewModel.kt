@@ -23,7 +23,6 @@ class EditorViewModel @AssistedInject constructor(
     @Assisted val noteId: Int,
     private val getNoteUseCase: GetNoteUseCase,
     private val addNoteUseCase: AddNoteUseCase,
-    private val updateNoteUseCase: UpdateNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase
 ) : ViewModel() {
 
@@ -66,12 +65,6 @@ class EditorViewModel @AssistedInject constructor(
 
     fun addNote(note: Note) = viewModelScope.launch {
         addNoteUseCase(note).onSuccess { result ->
-            // Do something
-        }
-    }
-
-    fun updateNote(note: Note) = viewModelScope.launch {
-        updateNoteUseCase(note).onSuccess { result ->
             // Do something
         }
     }

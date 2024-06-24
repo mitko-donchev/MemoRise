@@ -7,6 +7,7 @@ import com.mitko.domain.note.Note
 import com.mitko.domain.usecase.DeleteAllNotesUseCase
 import com.mitko.domain.usecase.DeleteNoteUseCase
 import com.mitko.domain.usecase.GetNotesUseCase
+import com.mitko.domain.usecase.UpdateNoteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getNotesUseCase: GetNotesUseCase,
+    private val updateNoteUseCase: UpdateNoteUseCase,
     private val deleteNoteUseCase: DeleteNoteUseCase,
     private val deleteAllNotesUseCase: DeleteAllNotesUseCase
 ) : ViewModel() {
@@ -58,6 +60,12 @@ class HomeViewModel @Inject constructor(
                     )
                 )
             }
+        }
+    }
+
+    fun updateNote(note: Note) = viewModelScope.launch {
+        updateNoteUseCase(note).onSuccess { result ->
+            // Do something
         }
     }
 
