@@ -1,3 +1,5 @@
+[![Android CI](https://github.com/mitko-donchev/MemoRise/actions/workflows/android.yml/badge.svg)](https://github.com/mitko-donchev/MemoRise/actions/workflows/android.yml)
+
 # MemoRise
 
 MemoRise is a cutting-edge Android note-taking application designed to provide a simple yet powerful way to manage your notes. Built with the latest Android technologies, it delivers a seamless and modern user experience.
